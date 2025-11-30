@@ -5,7 +5,7 @@ Arduboy2 arduboy;
 const int SCREEN_WIDTH = 128;
 const int SCREEN_HEIGHT = 64;
 
-// Состояния игры
+
 enum GameState {
   START_SCREEN,
   CHARACTER_SELECT,
@@ -14,24 +14,24 @@ enum GameState {
 
 GameState currentState = START_SCREEN;
 
-// Переменные для музыки стартового экрана
+
 bool startMusicPlaying = false;
 unsigned long musicStartTime = 0;
 int currentNote = 0;
 
-// Простая веселая мелодия (ноты и длительности)
-const int melodyNotes[] = {523, 659, 784, 659, 784, 880, 784, 659, 523, 659, 784, 880, 1047, 880, 784, 659}; // C5, E5, G5, E5, G5, A5, G5, E5, C5, E5, G5, A5, C6, A5, G5, E5
-const int melodyDurations[] = {200, 200, 200, 200, 200, 400, 200, 200, 200, 200, 200, 200, 400, 200, 200, 400}; // длительности в мс
 
-// Игрок
+const int melodyNotes[] = {523, 659, 784, 659, 784, 880, 784, 659, 523, 659, 784, 880, 1047, 880, 784, 659}; 
+const int melodyDurations[] = {200, 200, 200, 200, 200, 400, 200, 200, 200, 200, 200, 200, 400, 200, 200, 400}; 
+
+
 const int PLAYER_SIZE = 8;
-const int PLAYER_X = 20; // Фиксированная позиция по X
+const int PLAYER_X = 20; 
 int playerY = 32;
-int currentPlayerPosition = 1; // Текущая позиция игрока (0-3)
-int playerSpeed = 0; // Скорость игрока
-int previousPlayerPosition = 1; // Предыдущая позиция для расчета скорости
+int currentPlayerPosition = 1; 
+int playerSpeed = 0; 
+int previousPlayerPosition = 1; 
 
-// Типы фигур
+
 enum ShapeType {
   CIRCLE,
   SQUARE,
@@ -40,30 +40,30 @@ enum ShapeType {
   SHAPE_COUNT
 };
 
-// Блок фигур
+
 struct ShapeBlock {
   int x;
-  int shapes[4]; // Массив фигур (0-3)
-  int gapPosition; // Позиция прохода (0-3)
-  int width = 25; // Ширина блока
+  int shapes[4];
+  int gapPosition;
+  int width = 25;
   bool passed = false;
-  bool shapeHighlighted[4] = {false, false, false, false}; // Подсветка фигур
-  bool soundPlayed[4] = {false, false, false, false}; // Флаг воспроизведения звука
+  bool shapeHighlighted[4] = {false, false, false, false}; 
+  bool soundPlayed[4] = {false, false, false, false}; 
 };
 
 const int MAX_BLOCKS = 3;
 ShapeBlock blocks[MAX_BLOCKS];
-int blockSpeed = 1; // Уменьшил стартовую скорость
+int blockSpeed = 1; 
 
-// Счет
-int points = 0; // Переименовано из score в points
+
+int points = 0; 
 bool gameRunning = true;
-bool gameOverSoundPlayed = false; // Флаг для звука Game Over
+bool gameOverSoundPlayed = false; 
 
-// Общий размер для всех фигур
+
 const int SHAPE_SIZE = 8;
-const int SHAPE_SPACING = 4; // Расстояние между фигурами внутри блока
-const int BLOCKS_START_Y = 12; // Начинаем рисовать блоки ниже, чтобы не перекрывать счет
+const int SHAPE_SPACING = 4; 
+const int BLOCKS_START_Y = 12; 
 
 // Позиции центров для выравнивания игрока
 int shapeCenters[4] = {0, 0, 0, 0};
@@ -129,15 +129,14 @@ const uint8_t* const characterSprites[] PROGMEM = {
   salamanderImg
 };
 
-// === Соответствие персонаж -> фигура ===
+
 const uint8_t characterShapes[] PROGMEM = {
-  CIRCLE,     // 0 — капибара
-  SQUARE,     // 1 — альпака
-  TRIANGLE,   // 2 — медоед
-  RHOMBUS     // 3 — саламандра
+  CIRCLE,    
+  SQUARE,     
+  TRIANGLE,  
+  RHOMBUS     
 };
 
-// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
 
 int centerTextX(const char* text) {
   return (128 - (strlen(text) * 6)) / 2;
@@ -159,7 +158,7 @@ void drawRightArrow(int x, int y) {
   arduboy.drawPixel(x + 2, y + 4, WHITE);
 }
 
-// Функция для перемешивания массива (алгоритм Фишера-Йейтса)
+
 void shuffleArray(int array[], int size) {
   for (int i = size - 1; i > 0; i--) {
     int j = random(0, i + 1);
@@ -170,37 +169,37 @@ void shuffleArray(int array[], int size) {
 }
 
 void playSuccessSound() {
-  // Простой звук успеха с использованием встроенного спикера
-  tone(PIN_SPEAKER_1, 523, 80); // Нота C5 на 80 мс
+
+  tone(PIN_SPEAKER_1, 523, 80); 
 }
 
 void playCollisionSound() {
-  // Звук столкновения
-  tone(PIN_SPEAKER_1, 220, 200); // Низкая нота на 200 мс
+
+  tone(PIN_SPEAKER_1, 220, 200); 
 }
 
 void playGameOverSound() {
-  // Драматический звук Game Over - нисходящая последовательность нот
-  tone(PIN_SPEAKER_1, 392, 150); // Нота G4
+  
+  tone(PIN_SPEAKER_1, 392, 150); 
   delay(160);
-  tone(PIN_SPEAKER_1, 349, 150); // Нота F4
+  tone(PIN_SPEAKER_1, 349, 150); 
   delay(160);
-  tone(PIN_SPEAKER_1, 330, 150); // Нота E4
+  tone(PIN_SPEAKER_1, 330, 150); 
   delay(160);
-  tone(PIN_SPEAKER_1, 294, 300); // Нота D4 (дольше)
+  tone(PIN_SPEAKER_1, 294, 300); 
 }
 
 void playSelectSound() {
-  // Звук выбора - короткий позитивный звук
-  tone(PIN_SPEAKER_1, 659, 100); // Нота E5
+  
+  tone(PIN_SPEAKER_1, 659, 100); 
 }
 
 void playSwitchSound() {
-  // Звук переключения между персонажами - легкий щелчок
-  tone(PIN_SPEAKER_1, 523, 60); // Нота C5
+  
+  tone(PIN_SPEAKER_1, 523, 60); 
 }
 
-// Функция для воспроизведения мелодии стартового экрана
+
 void updateStartMusic() {
   if (!startMusicPlaying) {
     startMusicPlaying = true;
@@ -211,18 +210,18 @@ void updateStartMusic() {
     unsigned long currentTime = millis();
     unsigned long noteStartTime = musicStartTime;
     
-    // Суммируем длительности всех предыдущих нот
+    
     for (int i = 0; i < currentNote; i++) {
       noteStartTime += melodyDurations[i];
     }
     
-    // Проверяем, закончилась ли текущая нота
+   
     if (currentTime - noteStartTime >= melodyDurations[currentNote]) {
       currentNote++;
-      if (currentNote < 16) { // 16 нот в мелодии
+      if (currentNote < 16) { 
         tone(PIN_SPEAKER_1, melodyNotes[currentNote], melodyDurations[currentNote]);
       } else {
-        // Мелодия закончилась, начинаем заново
+        
         currentNote = 0;
         musicStartTime = millis();
         tone(PIN_SPEAKER_1, melodyNotes[currentNote], melodyDurations[currentNote]);
@@ -231,13 +230,13 @@ void updateStartMusic() {
   }
 }
 
-// Функция для остановки музыки стартового экрана
+
 void stopStartMusic() {
   startMusicPlaying = false;
   noTone(PIN_SPEAKER_1);
 }
 
-// === ФУНКЦИИ УПРАВЛЕНИЯ ИГРОКОМ ===
+
 
 void calculateShapeCenters() {
   int availableHeight = SCREEN_HEIGHT - BLOCKS_START_Y;
@@ -254,13 +253,13 @@ void updatePlayer() {
   if (!centersCalculated) {
     calculateShapeCenters();
   }  
-  // Сохраняем предыдущую позицию для расчета скорости
+  
   previousPlayerPosition = currentPlayerPosition;
   
-  // Обновляем позицию игрока на основе currentPlayerPosition
+  
   playerY = shapeCenters[currentPlayerPosition] - SHAPE_SIZE / 2;
   
-  // Обработка управления с защитой от многократного нажатия
+  
   if (arduboy.pressed(UP_BUTTON)) {
     if (!upPressed) {
       upPressed = true;
@@ -283,55 +282,55 @@ void updatePlayer() {
     downPressed = false;
   }
   
-  // Рассчитываем скорость на основе изменения позиции
+  
   playerSpeed = abs(currentPlayerPosition - previousPlayerPosition);
 }
 
-// === ФУНКЦИИ БЛОКОВ ===
+
 
 void resetBlock(int index) {
   blocks[index].x = SCREEN_WIDTH;
-  blocks[index].gapPosition = random(0, 4); // Случайная позиция прохода (0-3)
+  blocks[index].gapPosition = random(0, 4); 
   
-  // Создаем массив со всеми фигурами
+  
   int allShapes[4] = {CIRCLE, SQUARE, TRIANGLE, RHOMBUS};
   
-  // Перемешиваем массив фигур
+  
   shuffleArray(allShapes, 4);
   
-  // Копируем перемешанные фигуры в блок
+  
   for (int i = 0; i < 4; i++) {
     blocks[index].shapes[i] = allShapes[i];
     blocks[index].shapeHighlighted[i] = false;
     blocks[index].soundPlayed[i] = false;
   }
   
-  // Устанавливаем проход как фигуру текущего игрока
+
   blocks[index].shapes[blocks[index].gapPosition] = playerShape;
   blocks[index].passed = false;
 }
 
 void updateBlocks() {
   for (int i = 0; i < MAX_BLOCKS; i++) {
-    // Двигаем блоки с уменьшенной скоростью
+
     blocks[i].x -= blockSpeed;
     
-    // Проверка подсветки - когда блок идеально выровнен с игроком
+   
     if (!blocks[i].passed) {
-      // Определяем, какая фигура находится в позиции игрока
+      
       int shapeAtPlayerPosition = blocks[i].shapes[currentPlayerPosition];
       
-      // Если это фигура игрока и блок выровнен с игроком
+      
       if (shapeAtPlayerPosition == playerShape) {
-        // Вычисляем центр блока по X
+       
         int blockCenterX = blocks[i].x + blocks[i].width / 2;
         int playerCenterX = PLAYER_X + PLAYER_SIZE / 2;
         
-        // Подсвечиваем когда центры почти совпадают (небольшая погрешность)
+        
         if (abs(blockCenterX - playerCenterX) <= 2) {
           blocks[i].shapeHighlighted[currentPlayerPosition] = true;
           
-          // Воспроизводим звук только один раз для этого блока и позиции
+         
           if (!blocks[i].soundPlayed[currentPlayerPosition]) {
             blocks[i].soundPlayed[currentPlayerPosition] = true;
             playSuccessSound();
@@ -340,27 +339,27 @@ void updateBlocks() {
       }
     }
     
-    // Проверка прохождения блока
+    
     if (!blocks[i].passed && blocks[i].x + blocks[i].width < PLAYER_X) {
       blocks[i].passed = true;
-      points++; // Используем points вместо score
+      points++; 
       
-      // Постепенно увеличиваем скорость с ростом счета
+      
       blockSpeed = 1 + points / 5;
     }
     
-    // Если блок ушел за экран, создаем новый
+   
     if (blocks[i].x < -blocks[i].width) {
       resetBlock(i);
-      // Устанавливаем позицию нового блока с увеличенным расстоянием
+      
       int farthestX = 0;
       for (int j = 0; j < MAX_BLOCKS; j++) {
         if (blocks[j].x > farthestX) farthestX = blocks[j].x;
       }
-      blocks[i].x = farthestX + 100; // Увеличил расстояние между блоками еще больше
+      blocks[i].x = farthestX + 100; 
     }
     
-    // Проверка столкновения
+   
     if (checkCollision(i)) {
       gameRunning = false;
       playCollisionSound();
@@ -372,12 +371,12 @@ void updateBlocks() {
 bool checkCollision(int blockIndex) {
   ShapeBlock block = blocks[blockIndex];
   
-  // Проверяем, находится ли игрок в пределах блока по X
+ 
   if (PLAYER_X + PLAYER_SIZE > block.x && PLAYER_X < block.x + block.width) {
-    // Определяем, какая фигура находится в позиции игрока
+    
     int shapeAtPlayerPosition = block.shapes[currentPlayerPosition];
     
-    // Если фигура не совпадает с фигурой игрока - столкновение
+    
     if (shapeAtPlayerPosition != playerShape) {
       return true;
     }
@@ -385,25 +384,25 @@ bool checkCollision(int blockIndex) {
   return false;
 }
 
-// === ФУНКЦИИ ОТРИСОВКИ ===
 
-// Рисуем треугольник (игрок и препятствия)
+
+
 void drawTriangle(int x, int y, int size, bool filled = false) {
   if (filled) {
-    // Залитый треугольник
+   
     for (int i = 0; i < size; i++) {
       int startX = x + (size - i) / 2;
       int endX = x + size - (size - i) / 2;
       arduboy.drawLine(startX, y + i, endX, y + i);
     }
   } else {
-    arduboy.drawLine(x, y + size, x + size, y + size); // Основание
-    arduboy.drawLine(x, y + size, x + size/2, y);      // Левая сторона
-    arduboy.drawLine(x + size/2, y, x + size, y + size); // Правая сторона
+    arduboy.drawLine(x, y + size, x + size, y + size); 
+    arduboy.drawLine(x, y + size, x + size/2, y);      
+    arduboy.drawLine(x + size/2, y, x + size, y + size); 
   }
 }
 
-// Рисуем круг
+
 void drawCircle(int x, int y, int size, bool filled = false) {
   if (filled) {
     arduboy.fillCircle(x + size/2, y + size/2, size/2);
@@ -412,7 +411,7 @@ void drawCircle(int x, int y, int size, bool filled = false) {
   }
 }
 
-// Рисуем квадрат
+
 void drawSquare(int x, int y, int size, bool filled = false) {
   if (filled) {
     arduboy.fillRect(x, y, size, size);
@@ -421,28 +420,28 @@ void drawSquare(int x, int y, int size, bool filled = false) {
   }
 }
 
-// Рисуем ромб
+
 void drawRhombus(int x, int y, int size, bool filled = false) {
   int centerX = x + size/2;
   int centerY = y + size/2;
   int halfSize = size/2;
 
   if (filled) {
-    // Залитый ромб
+    
     for (int row = 0; row < size; row++) {
     int width;
       if (row < halfSize) {
-        width = row;  // Верхняя половина - увеличиваем ширину
+        width = row;  
       } else {
-        width = size - row - 1;  // Нижняя половина - уменьшаем ширину
+        width = size - row - 1;  
       }
       arduboy.drawLine(centerX - width, y + row, centerX + width, y + row);
     }
   } else {
-    arduboy.drawLine(centerX, y, x + size, centerY);      // Вправо-вниз
-    arduboy.drawLine(x + size, centerY, centerX, y + size); // Вправо-вверх
-    arduboy.drawLine(centerX, y + size, x, centerY);      // Влево-вверх
-    arduboy.drawLine(x, centerY, centerX, y);             // Влево-вниз
+    arduboy.drawLine(centerX, y, x + size, centerY);     
+    arduboy.drawLine(x + size, centerY, centerX, y + size); 
+    arduboy.drawLine(centerX, y + size, x, centerY);     
+    arduboy.drawLine(x, centerY, centerX, y);          
   }
 }
 
@@ -464,24 +463,24 @@ void drawShape(int shapeType, int x, int y, int size, bool highlighted = false) 
 }
 
 void drawGameOverScreen() {
-  // Размеры плашки
+
   const int boxWidth = 100;
   const int boxHeight = 40;
   const int boxX = (SCREEN_WIDTH - boxWidth) / 2;
   const int boxY = (SCREEN_HEIGHT - boxHeight) / 2;
   
-  // Рисуем черную плашку
+  
   arduboy.fillRect(boxX, boxY, boxWidth, boxHeight, BLACK);
   
-  // Рисуем белую обводку
+
   arduboy.drawRect(boxX, boxY, boxWidth, boxHeight, WHITE);
   
-  // Размеры текста для центрирования
-  const int textWidthFinish = 6 * 6; // "GAME OVER" - 8 символов × 6 пикселей
+ 
+  const int textWidthFinish = 6 * 6; 
   const int textWidthPoints = 6 * 6;
-  const int textWidthRestart = 6 * 12; // "Press A to restart" - 17 символов × 6 пикселей
+  const int textWidthRestart = 6 * 12;
   
-  // Центрируем текст "GAME OVER"
+
   int textXFinish = boxX + (boxWidth - textWidthFinish) / 2;
   arduboy.setCursor(textXFinish, boxY + 5);
   arduboy.print("FINISH");
@@ -490,7 +489,7 @@ void drawGameOverScreen() {
   arduboy.print("Points: ");
   arduboy.print(points);
   
-  // Центрируем текст "Press A to restart"
+
   int textXRestart = boxX + (boxWidth - textWidthRestart) / 2;
   arduboy.setCursor(textXRestart, boxY + 27);
   arduboy.print("A to restart");
@@ -499,7 +498,7 @@ void drawGameOverScreen() {
 void drawStartScreen() {
   arduboy.clear();
   
-  // Рисуем логотип вместо текста "TRIBE"
+  
   const int LOGO_WIDTH = 96;
   const int LOGO_HEIGHT = 40;
   const int LOGO_X = (SCREEN_WIDTH - LOGO_WIDTH) / 2;
@@ -512,7 +511,7 @@ void drawStartScreen() {
   arduboy.setCursor(instructionX, 50);
   arduboy.print(instruction);
   
-  // Воспроизводим музыку на стартовом экране
+ 
   updateStartMusic();
   
   arduboy.display();
@@ -550,7 +549,7 @@ void drawCharacterSelect() {
   const uint8_t* sprite = (const uint8_t*)pgm_read_ptr(&characterSprites[selectedCharacter]);
   arduboy.drawBitmap(CENTER_X, CENTER_Y, sprite, SPRITE_W, SPRITE_H, WHITE);
   
-    // Воспроизводим звук при изменении персонажа
+    
   if (selectedCharacter != previousCharacter) {
     playSwitchSound();
     previousCharacter = selectedCharacter;
@@ -567,38 +566,38 @@ void drawCharacterSelect() {
 void drawGameplay() {
   arduboy.clear();
   
-  // Рисуем игрока его фигурой
+
   drawShape(playerShape, PLAYER_X, playerY, SHAPE_SIZE);
   
-  // Рисуем блоки фигур
+
   for (int i = 0; i < MAX_BLOCKS; i++) {
     int availableHeight = SCREEN_HEIGHT - BLOCKS_START_Y;
     int totalShapesHeight = 4 * SHAPE_SIZE + 3 * SHAPE_SPACING;
     int startY = BLOCKS_START_Y + (availableHeight - totalShapesHeight) / 2;
     
-    // Выравниваем все фигуры по одной вертикальной оси
+   
     int shapeX = blocks[i].x + (blocks[i].width - SHAPE_SIZE) / 2;
     
     for (int j = 0; j < 4; j++) {
       int shapeY = startY + j * (SHAPE_SIZE + SHAPE_SPACING);
-      // Рисуем фигуру с подсветкой если нужно
+    
       drawShape(blocks[i].shapes[j], shapeX, shapeY, SHAPE_SIZE, blocks[i].shapeHighlighted[j]);
     }
   }
   
-  // Рисуем счет - используем Points вместо Score
+
   arduboy.setCursor(0, 0);
   arduboy.print("Points: ");
   arduboy.print(points);
   
-  // Отображаем скорость игрока вместо позиции
+
   arduboy.setCursor(80, 0);
   arduboy.print("Speed: ");
   arduboy.print(playerSpeed);
   
-  // Если игра окончена, рисуем экран Game Over
+  
   if (!gameRunning) {
-    // Воспроизводим звук Game Over только один раз
+    
     if (!gameOverSoundPlayed) {
       gameOverSoundPlayed = true;
       playGameOverSound();
@@ -609,26 +608,26 @@ void drawGameplay() {
   arduboy.display();
 }
 
-// === ФУНКЦИИ УПРАВЛЕНИЯ ИГРОЙ ===
+
 
 void restartGame() {
-  // Фигура игрока по выбранному персонажу
+ 
   playerShape = (ShapeType)pgm_read_byte(&characterShapes[selectedCharacter]);
 
   gameRunning = true;
-  gameOverSoundPlayed = false; // Сбрасываем флаг звука
-  points = 0; // Используем points вместо score
-  blockSpeed = 1; // Сбрасываем скорость до начальной
-  currentPlayerPosition = 1; // Стартовая позиция по центру
-  previousPlayerPosition = 1; // Сбрасываем предыдущую позицию
-  playerSpeed = 0; // Сбрасываем скорость
-  centersCalculated = false; // Сбрасываем расчет центров
-  calculateShapeCenters(); // Пересчитываем центры
+  gameOverSoundPlayed = false; 
+  points = 0; 
+  blockSpeed = 1; 
+  currentPlayerPosition = 1; 
+  previousPlayerPosition = 1; 
+  playerSpeed = 0; 
+  centersCalculated = false; 
+  calculateShapeCenters(); 
   playerY = shapeCenters[currentPlayerPosition] - SHAPE_SIZE / 2;
   
   for (int i = 0; i < MAX_BLOCKS; i++) {
     resetBlock(i);
-    blocks[i].x = SCREEN_WIDTH + (i * 100); // Увеличил начальное расстояние
+    blocks[i].x = SCREEN_WIDTH + (i * 100); 
   }
 }
 
@@ -637,17 +636,17 @@ void updateGameplay() {
   updateBlocks();
 }
 
-// === ОСНОВНЫЕ ФУНКЦИИ ARDUINO ===
+
 
 void setup() {
   arduboy.begin();
   arduboy.setFrameRate(60);
   
-  // Инициализация блоков
+
   playerShape = TRIANGLE;
   for (int i = 0; i < MAX_BLOCKS; i++) {
     resetBlock(i);
-    blocks[i].x = SCREEN_WIDTH + (i * 100); // Увеличил расстояние между блоками еще больше
+    blocks[i].x = SCREEN_WIDTH + (i * 100); 
   }
   
   calculateShapeCenters();
@@ -662,7 +661,7 @@ void loop() {
     case START_SCREEN:
       drawStartScreen();
       if (arduboy.justPressed(A_BUTTON)) {
-        stopStartMusic(); // Останавливаем музыку при переходе
+        stopStartMusic(); 
         currentState = CHARACTER_SELECT;
       }
       break;
@@ -676,8 +675,8 @@ void loop() {
         selectedCharacter = (selectedCharacter + 1) % 4;
       }
       if (arduboy.justPressed(B_BUTTON)) {
-        playSelectSound(); // Звук при выборе персонажа
-        delay(150); // Небольшая задержка для звука
+        playSelectSound();
+        delay(150); 
         restartGame();
         currentState = GAMEPLAY;
       }
